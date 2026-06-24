@@ -29,9 +29,9 @@ mod shared;
 mod state;
 mod storage;
 mod tailscale;
-#[cfg(desktop)]
+#[cfg(all(desktop, feature = "app-runtime"))]
 mod terminal;
-#[cfg(not(desktop))]
+#[cfg(any(not(desktop), not(feature = "app-runtime")))]
 #[path = "terminal_mobile.rs"]
 mod terminal;
 mod tray;

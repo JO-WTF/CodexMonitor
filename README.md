@@ -111,8 +111,10 @@ Build binaries:
 
 ```bash
 cd src-tauri
-cargo build --bin codex_monitor_daemon --bin codex_monitor_daemonctl
+cargo build --no-default-features --bin codex_monitor_daemon --bin codex_monitor_daemonctl
 ```
+
+The daemon binaries do not need the desktop app runtime, terminal, dictation, or Whisper dependencies, so build them with `--no-default-features`. Use the default Cargo features for full Tauri app builds.
 
 Examples:
 
