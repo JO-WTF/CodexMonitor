@@ -53,6 +53,7 @@ export default function WebApp() {
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [newWorkspacePath, setNewWorkspacePath] = useState("");
   const [busy, setBusy] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -173,6 +174,36 @@ export default function WebApp() {
         <div className="web-actions">
           <button onClick={connectWorkspace} disabled={!activeWorkspaceId || busy}>Connect</button>
           <button onClick={startThread} disabled={!activeWorkspaceId || busy}>New thread</button>
+        </div>
+        <label>
+          Add workspace
+          <input
+            value={newWorkspacePath}
+            onChange={(event) => setNewWorkspacePath(event.target.value)}
+            placeholder="/path/to/workspace"
+          />
+        </label>
+        <div className="web-actions">
+          <button
+            onClick={async () => {
+              if (newWorkspacePath.trim()) {
+                setBusy(true);
+                try {
+                  await client.addWorkspace(newWorkspacePath.trim());
+                  appendLog("info", "Added workspace.");
+                  setNewWorkspacePath("");
+                  await refreshWorkspaces();
+                } catch (error) {
+                  appendLog("error", error instanceof Error ? error.message : String(error));
+                } finally {
+                  setBusy(false);
+                }
+              }
+            }}
+            disabled={!newWorkspacePath.trim() || busy}
+          >
+            Add
+          </button>
         </div>
         <label>
           Thread ID

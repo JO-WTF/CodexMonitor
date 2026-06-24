@@ -51,6 +51,10 @@ export class CodexMonitorWebClient {
     return this.rpc<WorkspaceInfo[]>("list_workspaces");
   }
 
+  addWorkspace(path: string) {
+    return this.rpc<Record<string, unknown>>("add_workspace", { path });
+  }
+
   connectWorkspace(workspaceId: string) {
     return this.rpc<void>("connect_workspace", { id: workspaceId });
   }
