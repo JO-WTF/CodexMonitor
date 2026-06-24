@@ -130,6 +130,20 @@ Examples:
 ./target/debug/codex_monitor_daemonctl command-preview
 ```
 
+### Web Gateway Preview
+
+The daemon can expose a minimal HTTP/SSE gateway for browser-based chat experiments. Start it with a dedicated web listener and the same token used by TCP clients:
+
+```bash
+CODEX_MONITOR_DAEMON_TOKEN=dev-token \
+  ./target/debug/codex_monitor_daemon \
+  --listen 127.0.0.1:4732 \
+  --web-listen 127.0.0.1:4733
+```
+
+Then open the Vite app in web mode (`/web` or `/?web=1`) and point it at `http://127.0.0.1:4733`. The preview supports loading workspaces, connecting one workspace, starting a thread, sending a text task, and streaming `app-server-event` notifications over `GET /api/events`.
+
+
 Useful overrides:
 
 - `--data-dir <path>`: app data dir containing `settings.json` / `workspaces.json`

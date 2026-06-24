@@ -30,6 +30,8 @@ mod transport;
 mod types;
 #[path = "../utils.rs"]
 mod utils;
+#[path = "codex_monitor_daemon/web.rs"]
+mod web;
 #[path = "../workspaces/macos.rs"]
 mod workspace_macos;
 #[path = "../workspaces/settings.rs"]
@@ -144,6 +146,7 @@ impl EventSink for DaemonEventSink {
 
 struct DaemonConfig {
     listen: SocketAddr,
+    web_listen: Option<SocketAddr>,
     token: Option<String>,
     data_dir: PathBuf,
 }
@@ -1499,8 +1502,8 @@ fn default_data_dir() -> PathBuf {
 fn usage() -> String {
     format!(
         "\
-USAGE:\n  codex-monitor-daemon [--listen <addr>] [--data-dir <path>] [--token <token> | --insecure-no-auth]\n\n\
-OPTIONS:\n  --listen <addr>          Bind address (default: {DEFAULT_LISTEN_ADDR})\n  --data-dir <path>        Data dir holding workspaces.json/settings.json\n  --token <token>          Shared token required by TCP clients\n  --insecure-no-auth       Disable TCP auth (dev only)\n  -h, --help               Show this help\n"
+USAGE:\n  codex-monitor-daemon [--listen <addr>] [--web-listen <addr>] [--data-dir <path>] [--token <token> | --insecure-no-auth]\n\n\
+OPTIONS:\n  --listen <addr>          Bind TCP JSON-RPC address (default: {DEFAULT_LISTEN_ADDR})\n  --web-listen <addr>      Bind optional HTTP/SSE web gateway address\n  --data-dir <path>        Data dir holding workspaces.json/settings.json\n  --token <token>          Shared token required by TCP and web clients\n  --insecure-no-auth       Disable TCP/web auth (dev only)\n  -h, --help               Show this help\n"
     )
 }
 
@@ -1508,6 +1511,10 @@ fn parse_args() -> Result<DaemonConfig, String> {
     let mut listen = DEFAULT_LISTEN_ADDR
         .parse::<SocketAddr>()
         .map_err(|err| err.to_string())?;
+    let mut web_listen = env::var("CODEX_MONITOR_DAEMON_WEB_LISTEN")
+        .ok()
+        .map(|value| value.parse::<SocketAddr>().map_err(|err| err.to_string()))
+        .transpose()?;
     let mut token = env::var("CODEX_MONITOR_DAEMON_TOKEN")
         .ok()
         .map(|value| value.trim().to_string())
@@ -1525,6 +1532,10 @@ fn parse_args() -> Result<DaemonConfig, String> {
             "--listen" => {
                 let value = args.next().ok_or("--listen requires a value")?;
                 listen = value.parse::<SocketAddr>().map_err(|err| err.to_string())?;
+            }
+            "--web-listen" => {
+                let value = args.next().ok_or("--web-listen requires a value")?;
+                web_listen = Some(value.parse::<SocketAddr>().map_err(|err| err.to_string())?);
             }
             "--token" => {
                 let value = args.next().ok_or("--token requires a value")?;
@@ -1559,6 +1570,7 @@ fn parse_args() -> Result<DaemonConfig, String> {
 
     Ok(DaemonConfig {
         listen,
+        web_listen,
         token,
         data_dir: data_dir.unwrap_or_else(default_data_dir),
     })
@@ -1931,6 +1943,15 @@ fn main() {
         };
         let state = Arc::new(DaemonState::load(&config, event_sink));
         let config = Arc::new(config);
+
+        if let Some(web_listen) = config.web_listen {
+            tokio::spawn(web::serve_web_gateway(
+                web_listen,
+                config.token.clone(),
+                Arc::clone(&state),
+                events_tx.clone(),
+            ));
+        }
 
         let listener = match TcpListener::bind(config.listen).await {
             Ok(listener) => listener,
