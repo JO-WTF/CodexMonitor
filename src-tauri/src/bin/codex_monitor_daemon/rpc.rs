@@ -35,7 +35,7 @@ pub(super) fn build_result_response(id: Option<u64>, result: Value) -> Option<St
     )
 }
 
-fn build_event_notification(event: DaemonEvent) -> Option<String> {
+pub(super) fn build_event_notification(event: DaemonEvent) -> Option<String> {
     let payload = match event {
         DaemonEvent::AppServer(payload) => json!({
             "method": "app-server-event",
