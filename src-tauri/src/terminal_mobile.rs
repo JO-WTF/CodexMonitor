@@ -3,7 +3,7 @@ use tauri::{AppHandle, State};
 
 use crate::state::AppState;
 
-const UNSUPPORTED_MESSAGE: &str = "Terminal is not available on mobile builds.";
+const UNSUPPORTED_MESSAGE: &str = "Terminal is not available on mobile or minimal builds.";
 
 pub(crate) struct TerminalSession {
     pub(crate) id: String,

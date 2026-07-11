@@ -111,8 +111,10 @@ Build binaries:
 
 ```bash
 cd src-tauri
-cargo build --bin codex_monitor_daemon --bin codex_monitor_daemonctl
+cargo build --no-default-features --bin codex_monitor_daemon --bin codex_monitor_daemonctl
 ```
+
+The daemon binaries do not need the desktop app runtime, terminal, dictation, or Whisper dependencies, so build them with `--no-default-features`. Use the default Cargo features for full Tauri app builds.
 
 Examples:
 
@@ -129,6 +131,20 @@ Examples:
 # Print equivalent daemon start command
 ./target/debug/codex_monitor_daemonctl command-preview
 ```
+
+### Web Gateway Preview
+
+The daemon can expose a minimal HTTP/SSE gateway for browser-based chat experiments. Start it with a dedicated web listener and the same token used by TCP clients:
+
+```bash
+CODEX_MONITOR_DAEMON_TOKEN=dev-token \
+  ./target/debug/codex_monitor_daemon \
+  --listen 127.0.0.1:4732 \
+  --web-listen 127.0.0.1:4733
+```
+
+Then open the Vite app in web mode (`/web` or `/?web=1`) and point it at `http://127.0.0.1:4733`. The preview supports loading workspaces, connecting one workspace, starting a thread, sending a text task, and streaming `app-server-event` notifications over `GET /api/events`. See `docs/web-roadmap.md` for the Web product roadmap, current progress, and implementation plan.
+
 
 Useful overrides:
 

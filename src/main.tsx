@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App";
+import WebApp from "./WebApp";
 import { isMobilePlatform } from "./utils/platformPaths";
 
 const sentryDsn =
@@ -89,8 +90,12 @@ function syncMobileViewportHeight() {
 disableMobileZoomGestures();
 syncMobileViewportHeight();
 
+const isWebMode =
+  typeof window !== "undefined" &&
+  (window.location.pathname === "/web" || window.location.search.includes("web=1"));
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    {isWebMode ? <WebApp /> : <App />}
   </React.StrictMode>,
 );
