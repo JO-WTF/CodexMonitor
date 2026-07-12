@@ -150,6 +150,7 @@ These are v2 request methods CodexMonitor currently sends to Codex app-server:
 
 - `thread/start`
 - `thread/resume`
+- `thread/read`
 - `thread/fork`
 - `thread/list`
 - `thread/archive`
@@ -212,7 +213,6 @@ Compared against Codex v2 request methods, CodexMonitor currently does not send:
 - `thread/increment_elicitation`
 - `thread/loaded/list`
 - `thread/metadata/update`
-- `thread/read`
 - `thread/realtime/appendAudio`
 - `thread/realtime/appendText`
 - `thread/realtime/start`

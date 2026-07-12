@@ -7,6 +7,36 @@ on:
     branches: ["main"]
 
 jobs:
+  codex-contracts:
+    name: Codex contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate contracts and reject breaking v1 changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npm run check:codex-contracts -- --base "$BASE_SHA"
+
+  tauri-boundary:
+    name: Tauri boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Reject new desktop coupling
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npm run check:tauri-boundary -- --base "$BASE_SHA"
+
   lint:
     runs-on: ubuntu-latest
     steps:
